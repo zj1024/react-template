@@ -1,0 +1,18 @@
+# IDE
+.vscode
+.DS_Store
+Thumbs.db
+.idea
+
+# dev
+node_modules/
+
+# ci
+coverage/
+test-results/
+
+# yarn
+yarn-error.log
+
+# dist
+dist/
