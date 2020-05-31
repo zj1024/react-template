@@ -35,27 +35,51 @@ const minify =
 const externalsArr = [
   {
     module: 'react',
-    entry: '//cdn.bootcss.com/react/16.10.2/umd/react.production.min.js',
+    entry: `//cdn.bootcss.com/react/${getPackageVersion('react')}/umd/react.production.min.js`,
     global: 'React',
   },
   {
     module: 'react-dom',
-    entry: '//cdn.bootcss.com/react-dom/16.10.2/umd/react-dom.production.min.js',
+    entry: `//cdn.bootcss.com/react-dom/${getPackageVersion(
+      'react-dom',
+    )}/umd/react-dom.production.min.js`,
     global: 'ReactDOM',
   },
   {
     module: 'react-router-dom',
-    entry: '//cdn.bootcdn.net/ajax/libs/react-router-dom/5.1.2/react-router-dom.min.js',
+    entry: `//cdn.bootcdn.net/ajax/libs/react-router-dom/${getPackageVersion(
+      'react-router-dom',
+    )}/react-router-dom.min.js`,
     global: 'ReactRouterDOM',
-  },
-  {
-    module: 'babel-standalone',
-    entry: '//cdn.bootcdn.net/ajax/libs/babel-standalone/6.26.0/babel.min.js',
-    global: 'Babel',
   },
 ]
 
-const getExternals = () => {
+function getPackageVersion(packageName) {
+  const getDefaultVersion = () => {
+    switch (packageName) {
+      case 'react':
+        return '16.13.1'
+      case 'react-dom':
+        return '16.13.1'
+      case 'react-router-dom':
+        return '5.2.0'
+      default:
+        return ''
+    }
+  }
+
+  if (pkg.dependencies && pkg.dependencies[packageName]) {
+    const version = pkg.dependencies[packageName]
+    const reg = /^(\^|~)/
+    if (reg.test(version)) {
+      return version.slice(1)
+    }
+  }
+
+  return getDefaultVersion()
+}
+
+function getExternals() {
   let externals = {}
   externalsArr.forEach(item => {
     externals[item.module] = item.global
@@ -66,7 +90,7 @@ const getExternals = () => {
 /**
  * webpack externals config
  */
-const getPluginExternals = () => {
+function getPluginExternals() {
   return externalsArr
 }
 
@@ -74,7 +98,7 @@ const getPluginExternals = () => {
  * 获取本地ip地址
  * @return {string[]} [ 'localhost', '192.168.199.103' ]
  */
-const getIPv4AddressList = () => {
+function getIPv4AddressList() {
   const networkInterfaces = os.networkInterfaces()
   let result = []
 
@@ -89,7 +113,7 @@ const getIPv4AddressList = () => {
   return result
 }
 
-const envHandler = (type = ENV.DEVELOPMENT, callback = () => {}, isObj = false) => {
+function envHandler(type = ENV.DEVELOPMENT, callback = () => {}, isObj = false) {
   if (type === ENV.DEVELOPMENT) {
     if (NODE_ENV === ENV.DEVELOPMENT) {
       return callback
