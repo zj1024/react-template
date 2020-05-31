@@ -89,17 +89,34 @@ const getIPv4AddressList = () => {
   return result
 }
 
+const envHandler = (type = ENV.DEVELOPMENT, callback = () => {}, isObj = false) => {
+  if (type === ENV.DEVELOPMENT) {
+    if (NODE_ENV === ENV.DEVELOPMENT) {
+      return callback
+    } else {
+      return isObj ? {} : () => {}
+    }
+  }
+  if (type === ENV.PRODUCTION) {
+    if (NODE_ENV === ENV.PRODUCTION) {
+      return callback
+    } else {
+      return isObj ? {} : () => {}
+    }
+  }
+}
+
 module.exports = {
   mode: NODE_ENV,
   entry: './src/index',
   output: {
     path: path.resolve(__dirname, './dist'),
-    chunkFilename: `js/[name].[hash:5].${pkg.version}.js`,
+    filename: `js/[name]-[hash:5]-${pkg.version}.js`,
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.jsx', '.js'],
   },
-  externals: getExternals(),
+  externals: envHandler(ENV.PRODUCTION, getExternals(), true),
   module: {
     rules: [
       {
@@ -160,20 +177,24 @@ module.exports = {
       NODE_ENV,
       minify,
     }),
-    NODE_ENV === ENV.PRODUCTION
-      ? new HtmlWebpackExternalsPlugin({
-          externals: getPluginExternals(),
-        })
-      : () => {},
-    new FriendlyErrorsWebpackPlugin({
-      compilationSuccessInfo: {
-        messages: getIPv4AddressList().map(d => `> http://${d}:${PORT}`),
-        notes: ['Some additional notes to be displayed upon successful compilation'],
-      },
-    }),
+    envHandler(
+      ENV.PRODUCTION,
+      new HtmlWebpackExternalsPlugin({
+        externals: getPluginExternals(),
+      }),
+    ),
+    envHandler(
+      ENV.DEVELOPMENT,
+      new FriendlyErrorsWebpackPlugin({
+        compilationSuccessInfo: {
+          messages: getIPv4AddressList().map(d => `> http://${d}:${PORT}`),
+          notes: ['Some additional notes to be displayed upon successful compilation'],
+        },
+      }),
+    ),
     new webpack.NamedModulesPlugin(),
     new ExtractTextPlugin({
-      filename: `css/[name].[hash:5].${pkg.version}.css`,
+      filename: `css/[name]-[hash:5]-${pkg.version}.css`,
       allChunks: true,
     }),
     new HappyPack({
